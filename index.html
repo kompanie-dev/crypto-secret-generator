@@ -301,7 +301,7 @@
             }
 
             function generateAndDisplaySecret() {
-                const allowedCharacters = [...allowedCharactersInput.value]
+                const allowedCharacters = [...new Set(allowedCharactersInput.value)]
                     .join("");
 
                 if (allowedCharacters.length === 0) {
