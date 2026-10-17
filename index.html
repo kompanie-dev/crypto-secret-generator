@@ -223,7 +223,7 @@
                 let generatedCount = 0;
 
                 while (generatedCount < length) {
-                    const values = new Uint32Array(length);
+                    const values = new Uint32Array(length - generatedCount);
                     crypto.getRandomValues(values);
 
                     for (let i = 0; i < values.length && generatedCount < length; i++) {
