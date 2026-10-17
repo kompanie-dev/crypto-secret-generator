@@ -297,6 +297,10 @@
                 }, 2000);
             }
 
+            function dedupeCharacters(characters) {
+                return [...new Set(characters)];
+            }
+
             function isNumberInputCleared(input) {
                 return Number.isNaN(input.valueAsNumber);
             }
@@ -315,7 +319,7 @@
             }
 
             function generateAndDisplaySecret() {
-                const allowedCharacters = [...new Set(allowedCharactersInput.value)];
+                const allowedCharacters = dedupeCharacters(allowedCharactersInput.value);
 
                 if (allowedCharacters.length === 0) {
                     secretInput.value = "";
@@ -335,7 +339,7 @@
                 const blockLength = clampNumberInputValue(blockLengthInput);
                 const blockCount = clampNumberInputValue(blockCountInput);
                 const firstBlockAllowedCharacters = uppercaseFirstBlockInput.checked
-                    ? [...new Set(allowedCharacters.map((c) => c.toUpperCase()))]
+                    ? dedupeCharacters(allowedCharacters.map((c) => c.toUpperCase()))
                     : allowedCharacters;
 
                 secretInput.value = generateSecret(
@@ -399,6 +403,13 @@
                     }
                 });
             }
+
+            allowedCharactersInput.addEventListener("blur", () => {
+                const normalized = dedupeCharacters(allowedCharactersInput.value).join("");
+                if (normalized !== allowedCharactersInput.value) {
+                    allowedCharactersInput.value = normalized;
+                }
+            });
 
             generateAndDisplaySecret();
         </script>
