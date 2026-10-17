@@ -346,11 +346,21 @@
                 if (
                     (event.ctrlKey || event.metaKey) &&
                     !event.altKey &&
+                    !event.shiftKey &&
                     event.key.toLowerCase() === "c" &&
                     !inOtherEditableField
                 ) {
-                    event.preventDefault();
-                    handleCopyClick();
+                    const selection = document.getSelection();
+                    const selectionOutsideResultInput =
+                        selection &&
+                        !selection.isCollapsed &&
+                        !resultInput.contains(selection.anchorNode);
+
+                    if (!selectionOutsideResultInput) {
+                        event.preventDefault();
+                        handleCopyClick();
+                    }
+
                     return;
                 }
 
