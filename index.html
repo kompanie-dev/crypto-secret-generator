@@ -112,6 +112,12 @@
                 min-width: 0;
                 text-align: center;
             }
+
+            /* Mask the secret without password-field semantics, which
+               password managers detect and offer to save. */
+            #secret-input:not(.revealed) {
+                -webkit-text-security: disc;
+            }
         </style>
     </head>
     <body>
@@ -124,7 +130,7 @@
                     title="Show/Hide the secret"
                     autocomplete="off"
                 />
-                <input id="secret-input" type="password" autocomplete="off" spellcheck="false" />
+                <input id="secret-input" type="text" autocomplete="off" spellcheck="false" />
                 <button
                     id="copy-button"
                     title="Copy the generated secret to the clipboard."
@@ -286,7 +292,7 @@
             }
 
             function setSecretVisibility(isVisible) {
-                secretInput.type = isVisible ? "text" : "password";
+                secretInput.classList.toggle("revealed", isVisible);
                 showSecretCheckbox.checked = isVisible;
             }
 
