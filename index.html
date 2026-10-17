@@ -88,7 +88,7 @@
                 width: 100%;
             }
 
-            .entropy-label {
+            .entropy-display {
                 color: #aaa;
                 font-size: 14px;
                 margin: 10px 0 0 0;
@@ -204,39 +204,45 @@
             <button id="generate-button" class="generate-button">Generate</button>
 
             <div>
-                <label for="uppercase-first-block">
+                <label>
                     <input type="checkbox" id="uppercase-first-block" />
                     Uppercase first block
                 </label>
 
-                <label for="block-length">Block Length:</label>
-                <input
-                    type="number"
-                    id="block-length"
-                    min="1"
-                    max="10"
-                    value="6"
-                    autocomplete="off"
-                />
+                <label>
+                    Block Length:
+                    <input
+                        type="number"
+                        id="block-length"
+                        min="1"
+                        max="10"
+                        value="6"
+                        autocomplete="off"
+                    />
+                </label>
 
-                <label for="block-count">Number of Blocks:</label>
-                <input
-                    type="number"
-                    id="block-count"
-                    min="1"
-                    max="10"
-                    value="3"
-                    autocomplete="off"
-                />
+                <label>
+                    Block Count:
+                    <input
+                        type="number"
+                        id="block-count"
+                        min="1"
+                        max="10"
+                        value="3"
+                        autocomplete="off"
+                    />
+                </label>
 
-                <label for="allowed-chars">Allowed Characters:</label>
-                <input
-                    type="text"
-                    id="allowed-chars"
-                    value="abcdefghijklmnopqrstuvwxyz0123456789"
-                    placeholder="Enter allowed characters"
-                    autocomplete="off"
-                />
+                <label>
+                    Allowed Characters:
+                    <input
+                        type="text"
+                        id="allowed-chars"
+                        value="abcdefghijklmnopqrstuvwxyz0123456789"
+                        placeholder="Enter allowed characters"
+                        autocomplete="off"
+                    />
+                </label>
 
                 <p>
                     <button id="preset-letters-numbers">
@@ -247,7 +253,7 @@
                 </p>
             </div>
 
-            <p class="entropy-label">
+            <p class="entropy-display">
                 Entropy: <strong id="entropy-value">-</strong> bits
             </p>
         </div>
@@ -265,11 +271,11 @@
             const showSecretButton = document.getElementById(
                 "show-secret-button",
             );
-            const entropyValue = document.getElementById("entropy-value");
+            const entropyValueElement = document.getElementById("entropy-value");
             const secretInput = document.getElementById("secret-input");
             const allowedCharactersInput =
                 document.getElementById("allowed-chars");
-            const uppercaseFirstBlockInput = document.getElementById(
+            const uppercaseFirstBlockCheckbox = document.getElementById(
                 "uppercase-first-block",
             );
             const inputs = document.querySelectorAll("input:not(#secret-input)");
@@ -336,7 +342,7 @@
                 );
             }
 
-            async function handleCopyClick() {
+            async function copySecret() {
                 try {
                     await navigator.clipboard.writeText(secretInput.value);
                     setCopyButtonText("Copied!");
@@ -381,7 +387,7 @@
 
                 if (allowedCharacters.length === 0) {
                     secretInput.value = "";
-                    entropyValue.textContent = "0";
+                    entropyValueElement.textContent = "0";
                     return;
                 }
 
@@ -396,7 +402,7 @@
 
                 const blockLength = clampNumberInputValue(blockLengthInput);
                 const blockCount = clampNumberInputValue(blockCountInput);
-                const firstBlockAllowedCharacters = uppercaseFirstBlockInput.checked
+                const firstBlockAllowedCharacters = uppercaseFirstBlockCheckbox.checked
                     ? dedupeCharacters(allowedCharacters.map((c) => c.toUpperCase()))
                     : allowedCharacters;
 
@@ -407,7 +413,7 @@
                     allowedCharacters,
                 );
 
-                entropyValue.textContent = calculateEntropy(
+                entropyValueElement.textContent = calculateEntropy(
                     blockLength,
                     blockCount,
                     firstBlockAllowedCharacters.length,
@@ -441,7 +447,7 @@
             presetNumbers.addEventListener("click", () => {
                 setGenerationParameters(6, 1, "0123456789");
             });
-            copyButton.addEventListener("click", handleCopyClick);
+            copyButton.addEventListener("click", copySecret);
             showSecretButton.addEventListener("click", () => {
                 const isRevealed = secretInput.classList.toggle("revealed");
                 showSecretButton.setAttribute(
