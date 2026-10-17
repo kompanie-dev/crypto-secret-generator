@@ -296,11 +296,11 @@
                 showSecretCheckbox.checked = isVisible;
             }
 
-            function clampNumberInputValue(input, fallback) {
-                if (Number.isNaN(input.valueAsNumber)) {
-                    return fallback;
-                }
+            function isNumberInputCleared(input) {
+                return Number.isNaN(input.valueAsNumber);
+            }
 
+            function clampNumberInputValue(input) {
                 const clampedValue = Math.min(
                     Math.max(input.valueAsNumber, Number(input.min)),
                     Number(input.max),
@@ -325,14 +325,14 @@
                 // A cleared number field is mid-edit; keep the previous secret
                 // instead of regenerating at the fallback length.
                 if (
-                    Number.isNaN(blockLengthInput.valueAsNumber) ||
-                    Number.isNaN(blockCountInput.valueAsNumber)
+                    isNumberInputCleared(blockLengthInput) ||
+                    isNumberInputCleared(blockCountInput)
                 ) {
                     return;
                 }
 
-                const blockLength = clampNumberInputValue(blockLengthInput, 1);
-                const blockCount = clampNumberInputValue(blockCountInput, 1);
+                const blockLength = clampNumberInputValue(blockLengthInput);
+                const blockCount = clampNumberInputValue(blockCountInput);
                 const firstBlockAllowedCharacters = uppercaseFirstBlockInput.checked
                     ? [...new Set(allowedCharacters.map((c) => c.toUpperCase()))]
                     : allowedCharacters;
@@ -389,8 +389,8 @@
 
             for (const input of [blockLengthInput, blockCountInput]) {
                 input.addEventListener("blur", () => {
-                    if (Number.isNaN(input.valueAsNumber)) {
-                        input.value = String(clampNumberInputValue(input, 1));
+                    if (isNumberInputCleared(input)) {
+                        input.value = input.min;
                         generateAndDisplaySecret();
                     }
                 });
