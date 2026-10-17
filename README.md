@@ -2,6 +2,8 @@
 
 A single-page web app for generating random secrets, API keys, and license-code-style strings. Everything — markup, styles, and logic — lives in one dependency-free `index.html`; just open it in a browser.
 
+[Try it!](https://kompanie-dev.github.io/crypto-secret-generator/)
+
 ## Features
 
 - **Cryptographically secure randomness** — uses the Web Crypto API (`crypto.getRandomValues`) with rejection sampling to avoid modulo bias, so every allowed character is equally likely.
