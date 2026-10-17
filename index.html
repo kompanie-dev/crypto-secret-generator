@@ -191,10 +191,11 @@
                         <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                 </button>
-                <input id="secret-input" class="secret-input" type="text" autocomplete="off" spellcheck="false" />
+                <input id="secret-input" class="secret-input" type="text" aria-label="Generated secret" autocomplete="off" spellcheck="false" />
                 <button
                     id="copy-button"
                     class="copy-button"
+                    aria-live="polite"
                     title="Copy the generated secret to the clipboard."
                 >
                     Copy
