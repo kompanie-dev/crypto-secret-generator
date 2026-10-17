@@ -297,11 +297,6 @@
                 }, 2000);
             }
 
-            function setSecretVisibility(isVisible) {
-                secretInput.classList.toggle("revealed", isVisible);
-                showSecretCheckbox.checked = isVisible;
-            }
-
             function isNumberInputCleared(input) {
                 return Number.isNaN(input.valueAsNumber);
             }
@@ -386,7 +381,10 @@
             });
             copyButton.addEventListener("click", handleCopyClick);
             showSecretCheckbox.addEventListener("change", () => {
-                setSecretVisibility(showSecretCheckbox.checked);
+                secretInput.classList.toggle(
+                    "revealed",
+                    showSecretCheckbox.checked,
+                );
             });
 
             for (const input of inputs) {
