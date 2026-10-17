@@ -88,7 +88,7 @@
                 margin: 10px 0 0 0;
             }
 
-            .result-row {
+            .secret-row {
                 align-items: center;
                 display: flex;
                 gap: 8px;
@@ -107,7 +107,7 @@
                 width: 100%;
             }
 
-            #result-input {
+            #secret-input {
                 flex: 1;
                 min-width: 0;
                 text-align: center;
@@ -117,14 +117,14 @@
     <body>
         <h1>Crypto Secret Generator</h1>
         <div class="container">
-            <div class="result-row">
+            <div class="secret-row">
                 <input
                     type="checkbox"
                     id="show-secret"
                     title="(Shortcut: Alt+H) Show/Hide the secret"
                     autocomplete="off"
                 />
-                <input id="result-input" type="password" autocomplete="off" spellcheck="false" />
+                <input id="secret-input" type="password" autocomplete="off" spellcheck="false" />
                 <button
                     id="copy-button"
                     title="(Shortcut: Ctrl+C) Copy the generated secret to the clipboard."
@@ -176,7 +176,7 @@
                 />
 
                 <p>
-                    <button id="preset-lettersnumbers">
+                    <button id="preset-letters-numbers">
                         Letters + Numbers
                     </button>
                     <button id="preset-letters">Letters</button>
@@ -194,22 +194,22 @@
             const blockLengthInput = document.getElementById("block-length");
             const blockCountInput = document.getElementById("block-count");
             const presetLettersNumbers = document.getElementById(
-                "preset-lettersnumbers",
+                "preset-letters-numbers",
             );
             const presetLetters = document.getElementById("preset-letters");
             const presetNumbers = document.getElementById("preset-numbers");
             const copyButton = document.getElementById("copy-button");
             const showSecretCheckbox = document.getElementById("show-secret");
             const entropyValue = document.getElementById("entropy-value");
-            const resultInput = document.getElementById("result-input");
+            const secretInput = document.getElementById("secret-input");
             const allowedCharactersInput =
                 document.getElementById("allowed-chars");
             const uppercaseFirstBlockInput = document.getElementById(
                 "uppercase-first-block",
             );
-            const inputs = document.querySelectorAll("input:not(#result-input):not(#show-secret)");
+            const inputs = document.querySelectorAll("input:not(#secret-input):not(#show-secret)");
 
-            let copiedButtonTimeoutId;
+            let copyButtonTimeoutId;
 
             function generateCryptoRandomString(length, allowedCharacters) {
                 const alphabetSize = allowedCharacters.length;
@@ -236,26 +236,26 @@
                 return result;
             }
 
-            function generateCode(
+            function generateSecret(
                 blockLength,
                 blockCount,
                 firstBlockAllowedCharacters,
                 allowedCharacters,
             ) {
-                let code = "";
+                let secret = "";
 
                 for (let i = 0; i < blockCount; i++) {
-                    code += generateCryptoRandomString(
+                    secret += generateCryptoRandomString(
                         blockLength,
                         i === 0 ? firstBlockAllowedCharacters : allowedCharacters,
                     );
 
                     if (i < blockCount - 1) {
-                        code += "-";
+                        secret += "-";
                     }
                 }
 
-                return code;
+                return secret;
             }
 
             function calculateEntropy(
@@ -273,29 +273,29 @@
 
             async function handleCopyClick() {
                 try {
-                    await navigator.clipboard.writeText(resultInput.value);
-                    setCopyButtonState("Copied!");
+                    await navigator.clipboard.writeText(secretInput.value);
+                    setCopyButtonText("Copied!");
                 }
                 catch {
-                    setCopyButtonState("Copy failed!");
+                    setCopyButtonText("Copy failed!");
                 }
             }
 
-            function setCopyButtonState(text) {
+            function setCopyButtonText(text) {
                 copyButton.textContent = text;
 
-                clearTimeout(copiedButtonTimeoutId);
-                copiedButtonTimeoutId = setTimeout(() => {
+                clearTimeout(copyButtonTimeoutId);
+                copyButtonTimeoutId = setTimeout(() => {
                     copyButton.textContent = "Copy";
                 }, 2000);
             }
 
             function setSecretVisibility(isVisible) {
-                resultInput.type = isVisible ? "text" : "password";
+                secretInput.type = isVisible ? "text" : "password";
                 showSecretCheckbox.checked = isVisible;
             }
 
-            function getNumberInputValue(input, fallback) {
+            function clampNumberInputValue(input, fallback) {
                 if (Number.isNaN(input.valueAsNumber)) {
                     return fallback;
                 }
@@ -316,7 +316,7 @@
                 const allowedCharacters = [...new Set(allowedCharactersInput.value)];
 
                 if (allowedCharacters.length === 0) {
-                    resultInput.value = "";
+                    secretInput.value = "";
                     entropyValue.textContent = "0";
                     return;
                 }
@@ -330,13 +330,13 @@
                     return;
                 }
 
-                const blockLength = getNumberInputValue(blockLengthInput, 1);
-                const blockCount = getNumberInputValue(blockCountInput, 1);
+                const blockLength = clampNumberInputValue(blockLengthInput, 1);
+                const blockCount = clampNumberInputValue(blockCountInput, 1);
                 const firstBlockAllowedCharacters = uppercaseFirstBlockInput.checked
                     ? [...new Set(allowedCharacters.map((c) => c.toUpperCase()))]
                     : allowedCharacters;
 
-                resultInput.value = generateCode(
+                secretInput.value = generateSecret(
                     blockLength,
                     blockCount,
                     firstBlockAllowedCharacters,
@@ -352,13 +352,13 @@
             }
 
             function setGenerationParameters(
-                blockCount,
                 blockLength,
+                blockCount,
                 allowedCharacters,
             ) {
                 allowedCharactersInput.value = allowedCharacters;
-                blockCountInput.value = blockCount;
                 blockLengthInput.value = blockLength;
+                blockCountInput.value = blockCount;
 
                 generateAndDisplaySecret();
             }
@@ -366,7 +366,7 @@
             document.addEventListener("keydown", (event) => {
                 const target = event.target;
                 const inOtherEditableField =
-                    (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) && target !== resultInput;
+                    (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) && target !== secretInput;
 
                 if (
                     (event.ctrlKey || event.metaKey) &&
@@ -379,9 +379,9 @@
                     const selectionOutsideResultInput =
                         selection &&
                         !selection.isCollapsed &&
-                        !resultInput.contains(selection.anchorNode);
+                        !secretInput.contains(selection.anchorNode);
                     const selectionInsideResultInput =
-                        resultInput.selectionStart !== resultInput.selectionEnd;
+                        secretInput.selectionStart !== secretInput.selectionEnd;
 
                     if (
                         !selectionOutsideResultInput &&
@@ -413,17 +413,17 @@
 
             generateButton.addEventListener("click", generateAndDisplaySecret);
             presetLetters.addEventListener("click", () => {
-                setGenerationParameters(1, 6, "abcdefghijklmnopqrstuvwxyz");
+                setGenerationParameters(6, 1, "abcdefghijklmnopqrstuvwxyz");
             });
             presetLettersNumbers.addEventListener("click", () => {
                 setGenerationParameters(
-                    3,
                     6,
+                    3,
                     "abcdefghijklmnopqrstuvwxyz0123456789",
                 );
             });
             presetNumbers.addEventListener("click", () => {
-                setGenerationParameters(1, 6, "0123456789");
+                setGenerationParameters(6, 1, "0123456789");
             });
             copyButton.addEventListener("click", handleCopyClick);
             showSecretCheckbox.addEventListener("change", () => {
@@ -437,7 +437,7 @@
             for (const input of [blockLengthInput, blockCountInput]) {
                 input.addEventListener("blur", () => {
                     if (Number.isNaN(input.valueAsNumber)) {
-                        input.value = String(getNumberInputValue(input, 1));
+                        input.value = String(clampNumberInputValue(input, 1));
                         generateAndDisplaySecret();
                     }
                 });
