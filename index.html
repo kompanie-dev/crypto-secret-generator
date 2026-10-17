@@ -239,21 +239,16 @@
             function generateCode(
                 blockLength,
                 blockCount,
-                uppercaseFirstBlock,
+                firstBlockAllowedCharacters,
                 allowedCharacters,
             ) {
                 let code = "";
 
                 for (let i = 0; i < blockCount; i++) {
-                    const generatedBlock = generateCryptoRandomString(
+                    code += generateCryptoRandomString(
                         blockLength,
-                        allowedCharacters,
+                        i === 0 ? firstBlockAllowedCharacters : allowedCharacters,
                     );
-
-                    code +=
-                        uppercaseFirstBlock && i === 0
-                            ? generatedBlock.toUpperCase()
-                            : generatedBlock;
 
                     if (i < blockCount - 1) {
                         code += "-";
@@ -263,8 +258,17 @@
                 return code;
             }
 
-            function calculateEntropy(secretLength, charsetSize) {
-                return secretLength * Math.log2(charsetSize);
+            function calculateEntropy(
+                blockLength,
+                blockCount,
+                firstBlockAlphabetSize,
+                alphabetSize,
+            ) {
+                return (
+                    blockLength *
+                    (Math.log2(firstBlockAlphabetSize) +
+                        (blockCount - 1) * Math.log2(alphabetSize))
+                );
             }
 
             async function handleCopyClick() {
@@ -328,16 +332,21 @@
 
                 const blockLength = getNumberInputValue(blockLengthInput, 1);
                 const blockCount = getNumberInputValue(blockCountInput, 1);
+                const firstBlockAllowedCharacters = uppercaseFirstBlockInput.checked
+                    ? [...new Set(allowedCharacters.map((c) => c.toUpperCase()))]
+                    : allowedCharacters;
 
                 resultInput.value = generateCode(
                     blockLength,
                     blockCount,
-                    uppercaseFirstBlockInput.checked,
+                    firstBlockAllowedCharacters,
                     allowedCharacters,
                 );
 
                 entropyValue.textContent = calculateEntropy(
-                    blockLength * blockCount,
+                    blockLength,
+                    blockCount,
+                    firstBlockAllowedCharacters.length,
                     allowedCharacters.length,
                 ).toFixed(1);
             }
