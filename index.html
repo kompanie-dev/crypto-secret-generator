@@ -296,10 +296,16 @@
                     return fallback;
                 }
 
-                return Math.min(
+                const clampedValue = Math.min(
                     Math.max(input.valueAsNumber, Number(input.min)),
                     Number(input.max),
                 );
+
+                if (input.valueAsNumber !== clampedValue) {
+                    input.value = String(clampedValue);
+                }
+
+                return clampedValue;
             }
 
             function generateAndDisplaySecret() {
