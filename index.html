@@ -317,6 +317,15 @@
                     return;
                 }
 
+                // A cleared number field is mid-edit; keep the previous secret
+                // instead of regenerating at the fallback length.
+                if (
+                    Number.isNaN(blockLengthInput.valueAsNumber) ||
+                    Number.isNaN(blockCountInput.valueAsNumber)
+                ) {
+                    return;
+                }
+
                 const blockLength = getNumberInputValue(blockLengthInput, 1);
                 const blockCount = getNumberInputValue(blockCountInput, 1);
 
@@ -409,6 +418,15 @@
 
             for (const input of inputs) {
                 input.addEventListener("input", generateAndDisplaySecret);
+            }
+
+            for (const input of [blockLengthInput, blockCountInput]) {
+                input.addEventListener("blur", () => {
+                    if (Number.isNaN(input.valueAsNumber)) {
+                        input.value = String(getNumberInputValue(input, 1));
+                        generateAndDisplaySecret();
+                    }
+                });
             }
 
             generateAndDisplaySecret();
