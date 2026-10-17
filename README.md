@@ -15,3 +15,7 @@ A single-page web app for generating random secrets, API keys, and license-code-
 - **Clipboard copy** — with visual feedback
 - **Show/hide secret** — an eye-icon toggle button
 - **Live regeneration** — changing any option regenerates the secret immediately
+
+## Screenshot
+
+![Screenshot](./Screenshot.png)
