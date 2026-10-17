@@ -380,8 +380,13 @@
                         selection &&
                         !selection.isCollapsed &&
                         !resultInput.contains(selection.anchorNode);
+                    const selectionInsideResultInput =
+                        resultInput.selectionStart !== resultInput.selectionEnd;
 
-                    if (!selectionOutsideResultInput) {
+                    if (
+                        !selectionOutsideResultInput &&
+                        !selectionInsideResultInput
+                    ) {
                         event.preventDefault();
                         handleCopyClick();
                     }
