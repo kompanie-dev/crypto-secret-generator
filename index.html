@@ -95,19 +95,18 @@
                 margin-bottom: 10px;
             }
 
-            #copy-button {
+            .copy-button {
                 flex-shrink: 0;
-                margin-bottom: 0;
                 width: 75px;
             }
 
-            #generate-button {
+            .generate-button {
                 background: var(--primary-color);
                 border-color: var(--primary-color);
                 width: 100%;
             }
 
-            #secret-input {
+            .secret-input {
                 flex: 1;
                 min-width: 0;
                 text-align: center;
@@ -115,7 +114,7 @@
 
             /* Mask the secret without password-field semantics, which
                password managers detect and offer to save. */
-            #secret-input:not(.revealed) {
+            .secret-input:not(.revealed) {
                 -webkit-text-security: disc;
             }
         </style>
@@ -130,16 +129,17 @@
                     title="Show/Hide the secret"
                     autocomplete="off"
                 />
-                <input id="secret-input" type="text" autocomplete="off" spellcheck="false" />
+                <input id="secret-input" class="secret-input" type="text" autocomplete="off" spellcheck="false" />
                 <button
                     id="copy-button"
+                    class="copy-button"
                     title="Copy the generated secret to the clipboard."
                 >
                     Copy
                 </button>
             </div>
 
-            <button id="generate-button">Generate</button>
+            <button id="generate-button" class="generate-button">Generate</button>
 
             <div>
                 <label for="uppercase-first-block">
