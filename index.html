@@ -121,24 +121,19 @@
                 <input
                     type="checkbox"
                     id="show-secret"
-                    title="(Shortcut: Alt+H) Show/Hide the secret"
+                    title="Show/Hide the secret"
                     autocomplete="off"
                 />
                 <input id="secret-input" type="password" autocomplete="off" spellcheck="false" />
                 <button
                     id="copy-button"
-                    title="(Shortcut: Ctrl+C) Copy the generated secret to the clipboard."
+                    title="Copy the generated secret to the clipboard."
                 >
                     Copy
                 </button>
             </div>
 
-            <button
-                id="generate-button"
-                title="(Shortcut: Alt+X) Generate secret"
-            >
-                Generate
-            </button>
+            <button id="generate-button">Generate</button>
 
             <div>
                 <label for="uppercase-first-block">
@@ -362,54 +357,6 @@
 
                 generateAndDisplaySecret();
             }
-
-            document.addEventListener("keydown", (event) => {
-                const target = event.target;
-                const inOtherEditableField =
-                    (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) && target !== secretInput;
-
-                if (
-                    (event.ctrlKey || event.metaKey) &&
-                    !event.altKey &&
-                    !event.shiftKey &&
-                    event.key.toLowerCase() === "c" &&
-                    !inOtherEditableField
-                ) {
-                    const selection = document.getSelection();
-                    const selectionOutsideResultInput =
-                        selection &&
-                        !selection.isCollapsed &&
-                        !secretInput.contains(selection.anchorNode);
-                    const selectionInsideResultInput =
-                        secretInput.selectionStart !== secretInput.selectionEnd;
-
-                    if (
-                        !selectionOutsideResultInput &&
-                        !selectionInsideResultInput
-                    ) {
-                        event.preventDefault();
-                        handleCopyClick();
-                    }
-
-                    return;
-                }
-
-                if (!event.altKey) {
-                    return;
-                }
-
-                switch (event.key.toLowerCase()) {
-                    case "x":
-                        event.preventDefault();
-                        generateAndDisplaySecret();
-                        break;
-
-                    case "h":
-                        event.preventDefault();
-                        setSecretVisibility(!showSecretCheckbox.checked);
-                        break;
-                }
-            });
 
             generateButton.addEventListener("click", generateAndDisplaySecret);
             presetLetters.addEventListener("click", () => {
