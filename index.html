@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Crypto Secret Generator</title>
+        <style>
+            :root {
+                --background-color: #111;
+                --border-color: #333;
+                --primary-color: #85c;
+                --surface-color: #222;
+                --text-color: #eee;
+            }
+
+            body {
+                align-items: center;
+                background: var(--background-color);
+                color: var(--text-color);
+                display: flex;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                flex-direction: column;
+                margin: 0;
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            button {
+                background: var(--border-color);
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                color: var(--text-color);
+                cursor: pointer;
+                padding: 8px;
+                transition:
+                    background 0.2s,
+                    border-color 0.2s;
+            }
+
+            h1 {
+                color: var(--primary-color);
+                font-size: 24px;
+                margin-bottom: 30px;
+            }
+
+            input:not([type="checkbox"]):focus {
+                border-color: var(--primary-color);
+                outline: none;
+            }
+
+            input:not([type="checkbox"]) {
+                background: var(--background-color);
+                border: 1px solid var(--border-color);
+                border-radius: 4px;
+                box-sizing: border-box;
+                color: var(--text-color);
+                font: 18px monospace;
+                padding: 8px;
+                width: 100%;
+            }
+
+            input[type="checkbox"] {
+                margin-right: 8px;
+                padding: 0;
+                vertical-align: middle;
+                width: auto;
+            }
+
+            label {
+                display: block;
+                font-weight: 500;
+                margin-top: 12px;
+            }
+
+            .container {
+                background: var(--surface-color);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                max-width: 500px;
+                padding: 20px;
+                width: 100%;
+            }
+
+            .entropy-label {
+                color: #aaa;
+                font-size: 14px;
+                margin: 10px 0 0 0;
+            }
+
+            .result-row {
+                align-items: center;
+                display: flex;
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+
+            #copy-button {
+                flex-shrink: 0;
+                margin-bottom: 0;
+                width: 75px;
+            }
+
+            #generate-button {
+                background: var(--primary-color);
+                border-color: var(--primary-color);
+                width: 100%;
+            }
+
+            #result-input {
+                flex: 1;
+                min-width: 0;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Crypto Secret Generator</h1>
+        <div class="container">
+            <div class="result-row">
+                <input
+                    type="checkbox"
+                    id="show-secret"
+                    title="(Shortcut: Alt+H) Show/Hide the secret"
+                    checked
+                    autocomplete="off"
+                />
+                <input id="result-input" type="text" autocomplete="off" spellcheck="false" />
+                <button
+                    id="copy-button"
+                    title="(Shortcut: Ctrl+C) Copy the generated secret to the clipboard."
+                >
+                    Copy
+                </button>
+            </div>
+
+            <button
+                id="generate-button"
+                title="(Shortcut: Alt+X) Generate secret"
+            >
+                Generate
+            </button>
+
+            <div>
+                <label for="uppercase-first-block">
+                    <input type="checkbox" id="uppercase-first-block" />
+                    Uppercase first block
+                </label>
+
+                <label for="block-length">Block Length:</label>
+                <input
+                    type="number"
+                    id="block-length"
+                    min="1"
+                    max="10"
+                    value="6"
+                    autocomplete="off"
+                />
+
+                <label for="block-count">Number of Blocks:</label>
+                <input
+                    type="number"
+                    id="block-count"
+                    min="1"
+                    max="10"
+                    value="3"
+                    autocomplete="off"
+                />
+
+                <label for="allowed-chars">Allowed Characters:</label>
+                <input
+                    type="text"
+                    id="allowed-chars"
+                    value="abcdefghijklmnopqrstuvwxyz0123456789"
+                    placeholder="Enter allowed characters"
+                    autocomplete="off"
+                />
+
+                <p>
+                    <button id="preset-lettersnumbers">
+                        Letters + Numbers
+                    </button>
+                    <button id="preset-letters">Letters</button>
+                    <button id="preset-numbers">Numbers</button>
+                </p>
+            </div>
+
+            <p class="entropy-label">
+                Entropy: <strong id="entropy-value">-</strong> bits
+            </p>
+        </div>
+
+        <script>
+            const generateButton = document.getElementById("generate-button");
+            const blockLengthInput = document.getElementById("block-length");
+            const blockCountInput = document.getElementById("block-count");
+            const presetLettersNumbers = document.getElementById(
+                "preset-lettersnumbers",
+            );
+            const presetLetters = document.getElementById("preset-letters");
+            const presetNumbers = document.getElementById("preset-numbers");
+            const copyButton = document.getElementById("copy-button");
+            const showSecretCheckbox = document.getElementById("show-secret");
+            const entropyValue = document.getElementById("entropy-value");
+            const resultInput = document.getElementById("result-input");
+            const allowedCharactersInput =
+                document.getElementById("allowed-chars");
+            const uppercaseFirstBlockInput = document.getElementById(
+                "uppercase-first-block",
+            );
+            const inputs = document.querySelectorAll("input:not(#result-input):not(#show-secret)");
+
+            let copiedButtonTimeoutId;
+
+            function generateCryptoRandomString(length, allowedCharacters) {
+                const alphabetSize = allowedCharacters.length;
+                if (alphabetSize === 0) {
+                    return "";
+                }
+
+                const limit = Math.floor(0x100000000 / alphabetSize) * alphabetSize;
+                let result = "";
+
+                while (result.length < length) {
+                    const values = new Uint32Array(length);
+                    crypto.getRandomValues(values);
+
+                    for (let i = 0; i < values.length && result.length < length; i++) {
+                        if (values[i] < limit) {
+                            result += allowedCharacters[values[i] % alphabetSize];
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            function generateCode(
+                blockLength,
+                blockCount,
+                uppercaseFirstBlock,
+                allowedCharacters,
+            ) {
+                let code = "";
+
+                for (let i = 0; i < blockCount; i++) {
+                    const generatedBlock = generateCryptoRandomString(
+                        blockLength,
+                        allowedCharacters,
+                    );
+
+                    code +=
+                        uppercaseFirstBlock && i === 0
+                            ? generatedBlock.toUpperCase()
+                            : generatedBlock;
+
+                    if (i < blockCount - 1) {
+                        code += "-";
+                    }
+                }
+
+                return code;
+            }
+
+            function calculateEntropy(secretLength, charsetSize) {
+                return secretLength * Math.log2(charsetSize);
+            }
+
+            async function handleCopyClick() {
+                try {
+                    await navigator.clipboard.writeText(resultInput.value);
+                    setCopyButtonState("Copied!");
+                }
+                catch {
+                    setCopyButtonState("Copy failed!");
+                }
+            }
+
+            function setCopyButtonState(text) {
+                copyButton.textContent = text;
+
+                clearTimeout(copiedButtonTimeoutId);
+                copiedButtonTimeoutId = setTimeout(() => {
+                    copyButton.textContent = "Copy";
+                }, 2000);
+            }
+
+            function setSecretVisibility(isVisible) {
+                resultInput.type = isVisible ? "text" : "password";
+                showSecretCheckbox.checked = isVisible;
+            }
+
+            function getNumberInputValue(input, fallback) {
+                if (Number.isNaN(input.valueAsNumber)) {
+                    return fallback;
+                }
+
+                return Math.min(
+                    Math.max(input.valueAsNumber, Number(input.min)),
+                    Number(input.max),
+                );
+            }
+
+            function generateAndDisplaySecret() {
+                const allowedCharacters = [...allowedCharactersInput.value]
+                    .join("");
+
+                if (allowedCharacters.length === 0) {
+                    resultInput.value = "";
+                    entropyValue.textContent = "0";
+                    return;
+                }
+
+                const blockLength = getNumberInputValue(blockLengthInput, 1);
+                const blockCount = getNumberInputValue(blockCountInput, 1);
+
+                resultInput.value = generateCode(
+                    blockLength,
+                    blockCount,
+                    uppercaseFirstBlockInput.checked,
+                    allowedCharacters,
+                );
+
+                entropyValue.textContent = calculateEntropy(
+                    blockLength * blockCount,
+                    allowedCharacters.length,
+                ).toFixed(1);
+            }
+
+            function setGenerationParameters(
+                blockCount,
+                blockLength,
+                allowedCharacters,
+            ) {
+                allowedCharactersInput.value = allowedCharacters;
+                blockCountInput.value = blockCount;
+                blockLengthInput.value = blockLength;
+
+                generateAndDisplaySecret();
+            }
+
+            document.addEventListener("keydown", (event) => {
+                const target = event.target;
+                const inOtherEditableField =
+                    (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) && target !== resultInput;
+
+                if (
+                    (event.ctrlKey || event.metaKey) &&
+                    !event.altKey &&
+                    event.key.toLowerCase() === "c" &&
+                    !inOtherEditableField
+                ) {
+                    event.preventDefault();
+                    handleCopyClick();
+                    return;
+                }
+
+                if (!event.altKey) {
+                    return;
+                }
+
+                switch (event.key.toLowerCase()) {
+                    case "x":
+                        event.preventDefault();
+                        generateAndDisplaySecret();
+                        break;
+
+                    case "h":
+                        event.preventDefault();
+                        setSecretVisibility(!showSecretCheckbox.checked);
+                        break;
+                }
+            });
+
+            generateButton.addEventListener("click", generateAndDisplaySecret);
+            presetLetters.addEventListener("click", () => {
+                setGenerationParameters(1, 6, "abcdefghijklmnopqrstuvwxyz");
+            });
+            presetLettersNumbers.addEventListener("click", () => {
+                setGenerationParameters(
+                    3,
+                    6,
+                    "abcdefghijklmnopqrstuvwxyz0123456789",
+                );
+            });
+            presetNumbers.addEventListener("click", () => {
+                setGenerationParameters(1, 6, "0123456789");
+            });
+            copyButton.addEventListener("click", handleCopyClick);
+            showSecretCheckbox.addEventListener("change", () => {
+                setSecretVisibility(showSecretCheckbox.checked);
+            });
+
+            for (const input of inputs) {
+                input.addEventListener("input", generateAndDisplaySecret);
+            }
+
+            generateAndDisplaySecret();
+        </script>
+    </body>
+</html>
