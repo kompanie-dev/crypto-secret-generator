@@ -219,14 +219,16 @@
 
                 const limit = Math.floor(0x100000000 / alphabetSize) * alphabetSize;
                 let result = "";
+                let generatedCount = 0;
 
-                while (result.length < length) {
+                while (generatedCount < length) {
                     const values = new Uint32Array(length);
                     crypto.getRandomValues(values);
 
-                    for (let i = 0; i < values.length && result.length < length; i++) {
+                    for (let i = 0; i < values.length && generatedCount < length; i++) {
                         if (values[i] < limit) {
                             result += allowedCharacters[values[i] % alphabetSize];
+                            generatedCount++;
                         }
                     }
                 }
@@ -301,8 +303,7 @@
             }
 
             function generateAndDisplaySecret() {
-                const allowedCharacters = [...new Set(allowedCharactersInput.value)]
-                    .join("");
+                const allowedCharacters = [...new Set(allowedCharactersInput.value)];
 
                 if (allowedCharacters.length === 0) {
                     resultInput.value = "";
