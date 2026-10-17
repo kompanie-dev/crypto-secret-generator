@@ -112,7 +112,7 @@
                 width: 100%;
             }
 
-            .secret-input {
+            .secret-field {
                 flex: 1;
                 min-width: 0;
                 text-align: center;
@@ -145,7 +145,7 @@
 
             /* Mask the secret without password-field semantics, which
                password managers detect and offer to save. */
-            .secret-input:not(.revealed) {
+            .secret-field:not(.revealed) {
                 -webkit-text-security: disc;
             }
         </style>
@@ -191,7 +191,7 @@
                         <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                 </button>
-                <input id="secret-input" class="secret-input" type="text" aria-label="Generated secret" autocomplete="off" spellcheck="false" />
+                <input id="secret-field" class="secret-field" type="text" aria-label="Generated secret" autocomplete="off" spellcheck="false" />
                 <button
                     id="copy-button"
                     class="copy-button"
@@ -211,7 +211,7 @@
                 </label>
 
                 <label>
-                    Block Length:
+                    Block length:
                     <input
                         type="number"
                         id="block-length"
@@ -223,7 +223,7 @@
                 </label>
 
                 <label>
-                    Block Count:
+                    Block count:
                     <input
                         type="number"
                         id="block-count"
@@ -235,10 +235,10 @@
                 </label>
 
                 <label>
-                    Allowed Characters:
+                    Allowed characters:
                     <input
                         type="text"
-                        id="allowed-chars"
+                        id="allowed-characters"
                         value="abcdefghijklmnopqrstuvwxyz0123456789"
                         placeholder="Enter allowed characters"
                         autocomplete="off"
@@ -273,33 +273,33 @@
                 "show-secret-button",
             );
             const entropyValueElement = document.getElementById("entropy-value");
-            const secretInput = document.getElementById("secret-input");
+            const secretField = document.getElementById("secret-field");
             const allowedCharactersInput =
-                document.getElementById("allowed-chars");
+                document.getElementById("allowed-characters");
             const uppercaseFirstBlockCheckbox = document.getElementById(
                 "uppercase-first-block",
             );
-            const inputs = document.querySelectorAll("input:not(#secret-input)");
+            const inputs = document.querySelectorAll("input:not(#secret-field)");
 
             let copyButtonTimeoutId;
 
-            function generateCryptoRandomString(length, allowedCharacters) {
-                const alphabetSize = allowedCharacters.length;
-                if (alphabetSize === 0) {
+            function generateRandomBlock(blockLength, allowedCharacters) {
+                const characterCount = allowedCharacters.length;
+                if (characterCount === 0) {
                     return "";
                 }
 
-                const limit = Math.floor(0x100000000 / alphabetSize) * alphabetSize;
+                const limit = Math.floor(0x100000000 / characterCount) * characterCount;
                 let result = "";
                 let generatedCount = 0;
 
-                while (generatedCount < length) {
-                    const values = new Uint32Array(length - generatedCount);
+                while (generatedCount < blockLength) {
+                    const values = new Uint32Array(blockLength - generatedCount);
                     crypto.getRandomValues(values);
 
-                    for (let i = 0; i < values.length && generatedCount < length; i++) {
+                    for (let i = 0; i < values.length && generatedCount < blockLength; i++) {
                         if (values[i] < limit) {
-                            result += allowedCharacters[values[i] % alphabetSize];
+                            result += allowedCharacters[values[i] % characterCount];
                             generatedCount++;
                         }
                     }
@@ -317,7 +317,7 @@
                 let secret = "";
 
                 for (let i = 0; i < blockCount; i++) {
-                    secret += generateCryptoRandomString(
+                    secret += generateRandomBlock(
                         blockLength,
                         i === 0 ? firstBlockAllowedCharacters : allowedCharacters,
                     );
@@ -333,19 +333,19 @@
             function calculateEntropy(
                 blockLength,
                 blockCount,
-                firstBlockAlphabetSize,
-                alphabetSize,
+                firstBlockCharacterCount,
+                characterCount,
             ) {
                 return (
                     blockLength *
-                    (Math.log2(firstBlockAlphabetSize) +
-                        (blockCount - 1) * Math.log2(alphabetSize))
+                    (Math.log2(firstBlockCharacterCount) +
+                        (blockCount - 1) * Math.log2(characterCount))
                 );
             }
 
             async function copySecret() {
                 try {
-                    await navigator.clipboard.writeText(secretInput.value);
+                    await navigator.clipboard.writeText(secretField.value);
                     setCopyButtonText("Copied!");
                 }
                 catch {
@@ -387,7 +387,7 @@
                 const allowedCharacters = dedupeCharacters(allowedCharactersInput.value);
 
                 if (allowedCharacters.length === 0) {
-                    secretInput.value = "";
+                    secretField.value = "";
                     entropyValueElement.textContent = "0";
                     return;
                 }
@@ -407,7 +407,7 @@
                     ? dedupeCharacters(allowedCharacters.map((c) => c.toUpperCase()))
                     : allowedCharacters;
 
-                secretInput.value = generateSecret(
+                secretField.value = generateSecret(
                     blockLength,
                     blockCount,
                     firstBlockAllowedCharacters,
@@ -450,7 +450,7 @@
             });
             copyButton.addEventListener("click", copySecret);
             showSecretButton.addEventListener("click", () => {
-                const isRevealed = secretInput.classList.toggle("revealed");
+                const isRevealed = secretField.classList.toggle("revealed");
                 showSecretButton.setAttribute(
                     "aria-pressed",
                     String(isRevealed),
